@@ -2,7 +2,10 @@ C:\Users\Lenovo\.gemini\antigravity\scratch\fittrack\backend\src\main\java\com\g
 C:\Users\Lenovo\.gemini\antigravity\scratch\fittrack\backend\src\main\java\com\gympal\access\AccessControlLogRepository.java
 C:\Users\Lenovo\.gemini\antigravity\scratch\fittrack\backend\src\main\java\com\gympal\access\AccessService.java
 C:\Users\Lenovo\.gemini\antigravity\scratch\fittrack\backend\src\main\java\com\gympal\admin\AdminController.java
+<<<<<<< HEAD
 C:\Users\Lenovo\.gemini\antigravity\scratch\fittrack\backend\src\main\java\com\gympal\admin\AdminSeeder.java
+=======
+>>>>>>> 5a7751f537a0d69282e3f355076883a5e1fbf06b
 C:\Users\Lenovo\.gemini\antigravity\scratch\fittrack\backend\src\main\java\com\gympal\admin\AdminService.java
 C:\Users\Lenovo\.gemini\antigravity\scratch\fittrack\backend\src\main\java\com\gympal\admin\FeatureAuditLog.java
 C:\Users\Lenovo\.gemini\antigravity\scratch\fittrack\backend\src\main\java\com\gympal\admin\FeatureAuditLogRepository.java
