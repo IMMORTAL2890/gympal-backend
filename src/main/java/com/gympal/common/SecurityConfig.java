@@ -25,12 +25,9 @@ import java.util.Collections;
 @EnableWebSecurity
 public class SecurityConfig {
 
-<<<<<<< HEAD
     @org.springframework.beans.factory.annotation.Value("${cors.allowed-origins:http://localhost:3000,http://localhost:3001,https://gympal-frontend.vercel.app}")
     private String allowedOrigins;
 
-=======
->>>>>>> 5a7751f537a0d69282e3f355076883a5e1fbf06b
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
@@ -71,14 +68,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-<<<<<<< HEAD
         // Allow Next.js frontend dynamic and dev origins
         java.util.List<String> origins = java.util.Arrays.asList(allowedOrigins.split(","));
         configuration.setAllowedOrigins(origins);
-=======
-        // Allow Next.js frontend local dev server
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:3001"));
->>>>>>> 5a7751f537a0d69282e3f355076883a5e1fbf06b
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control", "X-Webhook-Secret"));
         configuration.setExposedHeaders(Collections.singletonList("Authorization"));

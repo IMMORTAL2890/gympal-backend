@@ -103,10 +103,7 @@ com\gympal\alerts\AlertController$DuesAlertDto.class
 com\gympal\members\MemberService$AccessUpdateDto.class
 com\gympal\gym\TrustedIp$TrustedIpBuilder.class
 com\gympal\admin\FeatureGate.class
-<<<<<<< HEAD
 com\gympal\admin\AdminSeeder.class
-=======
->>>>>>> 5a7751f537a0d69282e3f355076883a5e1fbf06b
 com\gympal\common\exceptions\UnauthorizedException.class
 com\gympal\auth\AuthService$UserDto.class
 com\gympal\attendance\AttendanceController$PunchResponse.class
