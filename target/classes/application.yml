@@ -1,0 +1,33 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: fittrack-backend
+  
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5433/fittrack?stringtype=unspecified}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:admin}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+jwt:
+  # Secret key for HS256 algorithm (at least 256 bits, base64 encoded or simple text for dev)
+  secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+  # 15 minutes in milliseconds = 900,000
+  access-token-expiration-ms: 900000
+  # 30 days in milliseconds = 2,592,000,000
+  refresh-token-expiration-ms: 2592000000
