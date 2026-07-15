@@ -49,12 +49,12 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
-                    "/api/v1/auth/signup",
-                    "/api/v1/auth/login",
-                    "/api/v1/auth/refresh",
-                    "/api/v1/auth/oauth/google",
-                    "/api/v1/attendance/punches",
-                    "/api/v1/webhooks/cron/expiry-reminders",
+                    "/api/v1/auth/signup", "/auth/signup",
+                    "/api/v1/auth/login", "/auth/login",
+                    "/api/v1/auth/refresh", "/auth/refresh",
+                    "/api/v1/auth/oauth/google", "/auth/oauth/google",
+                    "/api/v1/attendance/punches", "/attendance/punches",
+                    "/api/v1/webhooks/cron/expiry-reminders", "/webhooks/cron/expiry-reminders",
                     "/iclock/**"
                 ).permitAll()
                 .requestMatchers("/api/v1/admin/**").hasRole("SUPER_ADMIN")
