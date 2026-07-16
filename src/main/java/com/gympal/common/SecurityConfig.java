@@ -67,16 +67,26 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        // Allow Next.js frontend dynamic and dev origins
-        java.util.List<String> origins = java.util.Arrays.asList(allowedOrigins.split(","));
-        configuration.setAllowedOrigins(origins);
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control", "X-Webhook-Secret"));
-        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
-        configuration.setAllowCredentials(true);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+        return request -> {
+            String origin = request.getHeader("Origin");
+            CorsConfiguration configuration = new CorsConfiguration();
+            
+            if (origin != null && (
+                origin.endsWith(".vercel.app") || 
+                origin.startsWith("http://localhost:") || 
+                origin.startsWith("http://127.0.0.1:")
+            )) {
+                configuration.setAllowedOrigins(Collections.singletonList(origin));
+            } else {
+                java.util.List<String> origins = java.util.Arrays.asList(allowedOrigins.split(","));
+                configuration.setAllowedOrigins(origins);
+            }
+            
+            configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+            configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control", "X-Webhook-Secret"));
+            configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+            configuration.setAllowCredentials(true);
+            return configuration;
+        };
     }
 }
