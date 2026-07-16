@@ -38,10 +38,35 @@ public class MembershipStatusService {
             }
         }
 
-        // Sync access for all members
+        // Sync access for all members efficiently without N+1
         List<Member> members = memberRepository.findAll();
+        java.util.Map<Long, List<Membership>> membershipMap = memberships.stream()
+                .collect(Collectors.groupingBy(m -> m.getMember().getId()));
+
         for (Member member : members) {
-            accessService.syncMemberAccessStatus(member.getId());
+            List<Membership> memberMemberships = membershipMap.getOrDefault(member.getId(), java.util.Collections.emptyList());
+            boolean hasActiveMembership = memberMemberships.stream().anyMatch(m -> {
+                boolean isDateValid = !m.getStartDate().isAfter(today) && !m.getEndDate().isBefore(today);
+                boolean isNotUnpaid = !"unpaid".equals(m.getPaymentStatus());
+                boolean isPlanActive = m.getPlan() == null || m.getPlan().isActive();
+                return isDateValid && isNotUnpaid && isPlanActive;
+            });
+
+            if (hasActiveMembership) {
+                if (member.getAccessStatus() == com.gympal.common.enums.AccessStatus.blocked) {
+                    member.setAccessStatus(com.gympal.common.enums.AccessStatus.allowed);
+                    member.setBlockReason(null);
+                    member.setBlockedAt(null);
+                    memberRepository.save(member);
+                }
+            } else {
+                if (member.getAccessStatus() == com.gympal.common.enums.AccessStatus.allowed) {
+                    member.setAccessStatus(com.gympal.common.enums.AccessStatus.blocked);
+                    member.setBlockReason("Membership expired");
+                    member.setBlockedAt(java.time.Instant.now());
+                    memberRepository.save(member);
+                }
+            }
         }
     }
 

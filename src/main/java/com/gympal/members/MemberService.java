@@ -43,10 +43,14 @@ public class MemberService {
         List<Member> members = memberRepository.searchMembers(gymOwnerId, query);
         LocalDate today = LocalDate.now();
 
+        List<Membership> allMemberships = membershipRepository.findByGymOwnerId(gymOwnerId);
+        Map<Long, List<Membership>> membershipMap = allMemberships.stream()
+                .collect(Collectors.groupingBy(m -> m.getMember().getId()));
+
         List<MemberResponseDto> responseList = new ArrayList<>();
 
         for (Member m : members) {
-            List<Membership> memberships = membershipRepository.findByMemberIdAndGymOwnerId(m.getId(), gymOwnerId);
+            List<Membership> memberships = membershipMap.getOrDefault(m.getId(), Collections.emptyList());
             
             // Calculate total outstanding dues
             BigDecimal totalDues = memberships.stream()
@@ -122,8 +126,8 @@ public class MemberService {
         if (dto.getFullName() == null || dto.getFullName().isBlank()) {
             throw new BadRequestException("Full name is required");
         }
-        if (dto.getMobileNumber() == null || !dto.getMobileNumber().matches("^[0-9+\\-\\s]{7,15}$")) {
-            throw new BadRequestException("Mobile number must be between 7 and 15 digits");
+        if (dto.getMobileNumber() == null || !dto.getMobileNumber().matches("^[0-9]{10}$")) {
+            throw new BadRequestException("Mobile number must be exactly 10 digits");
         }
         if (memberRepository.existsByGymOwnerIdAndMobileNumber(gymOwnerId, dto.getMobileNumber())) {
             throw new BadRequestException("A member with this mobile number is already registered");
@@ -159,7 +163,7 @@ public class MemberService {
                 .photoUrl(dto.getPhotoUrl())
                 .joinedDate(dto.getJoinedDate() != null ? dto.getJoinedDate() : LocalDate.now())
                 .biometricUid(dto.getBiometricUid())
-                .accessStatus(AccessStatus.allowed)
+                .accessStatus(com.gympal.common.enums.AccessStatus.blocked)
                 .gymOwnerId(gymOwnerId)
                 .build();
 
@@ -332,13 +336,21 @@ public class MemberService {
         private String biometricUid;
 
         public String getFullName() { return fullName; }
+        public void setFullName(String fullName) { this.fullName = fullName; }
         public String getMobileNumber() { return mobileNumber; }
+        public void setMobileNumber(String mobileNumber) { this.mobileNumber = mobileNumber; }
         public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
         public LocalDate getDateOfBirth() { return dateOfBirth; }
+        public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
         public String getAddress() { return address; }
+        public void setAddress(String address) { this.address = address; }
         public String getPhotoUrl() { return photoUrl; }
+        public void setPhotoUrl(String photoUrl) { this.photoUrl = photoUrl; }
         public LocalDate getJoinedDate() { return joinedDate; }
+        public void setJoinedDate(LocalDate joinedDate) { this.joinedDate = joinedDate; }
         public String getBiometricUid() { return biometricUid; }
+        public void setBiometricUid(String biometricUid) { this.biometricUid = biometricUid; }
     }
 
     public static class AccessUpdateDto {

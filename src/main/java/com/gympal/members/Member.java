@@ -54,7 +54,7 @@ public class Member {
     @Enumerated(EnumType.STRING)
     @Column(name = "access_status", columnDefinition = "access_status")
     @Builder.Default
-    private AccessStatus accessStatus = AccessStatus.allowed;
+    private AccessStatus accessStatus = AccessStatus.blocked;
 
     @Column(name = "block_reason")
     private String blockReason;

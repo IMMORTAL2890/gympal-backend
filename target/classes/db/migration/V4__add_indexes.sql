@@ -1,0 +1,10 @@
+CREATE INDEX idx_plans_gym_owner ON plans(gym_owner_id);
+CREATE INDEX idx_members_gym_owner ON members(gym_owner_id);
+CREATE INDEX idx_memberships_gym_owner ON memberships(gym_owner_id);
+CREATE INDEX idx_memberships_member_id ON memberships(member_id);
+CREATE INDEX idx_payment_tx_gym_owner ON payment_transactions(gym_owner_id);
+CREATE INDEX idx_payment_tx_membership_id ON payment_transactions(membership_id);
+CREATE INDEX idx_attendance_logs_gym_owner ON attendance_logs(gym_owner_id);
+CREATE INDEX idx_attendance_logs_member_id ON attendance_logs(member_id);
+CREATE INDEX idx_attendance_summary_gym_owner ON attendance_summary(gym_owner_id);
+CREATE INDEX idx_notification_logs_gym_owner ON notification_logs(gym_owner_id);

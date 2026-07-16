@@ -48,13 +48,21 @@ public class AdminService {
         LocalDate startOfMonth = today.withDayOfMonth(1);
         LocalDate endOfMonth = today.with(java.time.temporal.TemporalAdjusters.lastDayOfMonth());
 
+        List<Member> allMembers = memberRepository.findAll();
+        List<PaymentTransaction> allTxs = paymentTransactionRepository.findAll();
+        List<TrustedIp> allIps = trustedIpRepository.findAll();
+
+        Map<UUID, Long> memberCountMap = allMembers.stream().collect(Collectors.groupingBy(Member::getGymOwnerId, Collectors.counting()));
+        Map<UUID, List<PaymentTransaction>> txMap = allTxs.stream().collect(Collectors.groupingBy(PaymentTransaction::getGymOwnerId));
+        Map<UUID, List<TrustedIp>> ipMap = allIps.stream().collect(Collectors.groupingBy(ip -> ip.getOwner().getId()));
+
         List<GymSummaryDto> summaries = new ArrayList<>();
 
         for (GymOwner gym : gyms) {
             UUID gymId = gym.getId();
-            long memberCount = memberRepository.findByGymOwnerId(gymId).size();
+            long memberCount = memberCountMap.getOrDefault(gymId, 0L);
 
-            List<PaymentTransaction> txs = paymentTransactionRepository.findByGymOwnerId(gymId);
+            List<PaymentTransaction> txs = txMap.getOrDefault(gymId, Collections.emptyList());
             
             BigDecimal allTimeRevenue = txs.stream()
                     .map(PaymentTransaction::getAmount)
@@ -66,7 +74,7 @@ public class AdminService {
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             // Last active time from trusted IPs
-            List<TrustedIp> ips = trustedIpRepository.findByOwnerId(gymId);
+            List<TrustedIp> ips = ipMap.getOrDefault(gymId, Collections.emptyList());
             Instant lastActive = ips.stream()
                     .map(TrustedIp::getLastSeenAt)
                     .filter(Objects::nonNull)

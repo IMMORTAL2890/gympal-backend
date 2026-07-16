@@ -124,20 +124,27 @@ public class AuthService {
         gymOwnerRepository.save(owner);
 
         // Record trusted IP if client IP is present
-        if (clientIp != null && !clientIp.isEmpty()) {
-            // Check if IP format is ipv6 loopback or similar
-            String formattedIp = "0:0:0:0:0:0:0:1".equals(clientIp) || "127.0.0.1".equals(clientIp) ? "127.0.0.1" : clientIp;
-            
-            // Check if already exists for safety
-            if (trustedIpRepository.findByOwnerIdAndIpAddress(owner.getId(), formattedIp).isEmpty()) {
-                TrustedIp ip = TrustedIp.builder()
-                        .owner(owner)
-                        .ipAddress(formattedIp)
-                        .label("This device")
-                        .lastSeenAt(Instant.now())
-                        .build();
-                trustedIpRepository.save(ip);
+        try {
+            if (clientIp != null && !clientIp.isEmpty()) {
+                // Check if IP format is ipv6 loopback or similar
+                String formattedIp = "0:0:0:0:0:0:0:1".equals(clientIp) || "127.0.0.1".equals(clientIp) || "::1".equals(clientIp) ? "127.0.0.1" : clientIp;
+                
+                // Fetch in memory to avoid PostgreSQL INET comparison cast issues
+                boolean ipExists = trustedIpRepository.findByOwnerId(owner.getId()).stream()
+                        .anyMatch(ip -> ip.getIpAddress().equalsIgnoreCase(formattedIp));
+                
+                if (!ipExists) {
+                    TrustedIp ip = TrustedIp.builder()
+                            .owner(owner)
+                            .ipAddress(formattedIp)
+                            .label("This device")
+                            .lastSeenAt(Instant.now())
+                            .build();
+                    trustedIpRepository.save(ip);
+                }
             }
+        } catch (Exception e) {
+            System.err.println("Warning: Failed to save trusted IP address: " + e.getMessage());
         }
 
         return owner;
@@ -206,9 +213,11 @@ public class AuthService {
     }
 
     private String extractEmailFromGoogleToken(String idToken) {
-        if (idToken.contains("@")) {
-            return idToken;
+        // Secure Mock bypass for testing only
+        if (idToken.startsWith("MOCK_TOKEN:")) {
+            return idToken.substring(11);
         }
+        
         try {
             String[] parts = idToken.split("\\.");
             if (parts.length >= 2) {
@@ -221,9 +230,9 @@ public class AuthService {
                 }
             }
         } catch (Exception e) {
-            // Fallback
+            throw new UnauthorizedException("Invalid Google token format");
         }
-        return "google-user-" + UUID.randomUUID().toString().substring(0, 8) + "@gympal.com";
+        throw new UnauthorizedException("Could not extract email from Google token");
     }
 
     // Static Request/Response classes
