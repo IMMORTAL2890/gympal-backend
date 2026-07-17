@@ -39,7 +39,7 @@ spring:
 jwt:
   # Secret key for HS256 algorithm (at least 256 bits, base64 encoded or simple text for dev)
   secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
-  # 15 minutes in milliseconds = 900,000
-  access-token-expiration-ms: 900000
+  # 7 days in milliseconds = 604,800,000
+  access-token-expiration-ms: 604800000
   # 30 days in milliseconds = 2,592,000,000
   refresh-token-expiration-ms: 2592000000
