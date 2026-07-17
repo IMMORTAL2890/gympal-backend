@@ -10,7 +10,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-@CrossOrigin(origins = "*")
 public interface MembershipRepository extends JpaRepository<Membership, Long> {
     Optional<Membership> findByIdAndGymOwnerId(Long id, UUID gymOwnerId);
     List<Membership> findByMemberIdAndGymOwnerId(Long memberId, UUID gymOwnerId);
