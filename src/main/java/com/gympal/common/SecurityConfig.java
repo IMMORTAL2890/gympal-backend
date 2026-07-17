@@ -52,6 +52,8 @@ public class SecurityConfig {
                     "/api/v1/auth/signup", "/auth/signup",
                     "/api/v1/auth/login", "/auth/login",
                     "/api/v1/auth/refresh", "/auth/refresh",
+                    "/api/v1/auth/forgot-password", "/auth/forgot-password",
+                    "/api/v1/auth/reset-password", "/auth/reset-password",
                     "/api/v1/auth/oauth/google", "/auth/oauth/google",
                     "/api/v1/attendance/punches", "/attendance/punches",
                     "/api/v1/webhooks/cron/expiry-reminders", "/webhooks/cron/expiry-reminders",

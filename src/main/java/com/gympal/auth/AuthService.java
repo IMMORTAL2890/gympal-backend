@@ -34,14 +34,24 @@ public class AuthService {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Autowired
+    private com.gympal.common.EmailService emailService;
+
     @Transactional
     public AuthResponse register(SignupRequest request) {
-        if (appUserRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new ConflictException("Email is already registered: " + request.getEmail());
+        if (request.getEmail() == null) {
+            throw new BadRequestException("Email is required");
+        }
+        String normalizedEmail = request.getEmail().trim().toLowerCase();
+        if (appUserRepository.findByEmail(normalizedEmail).isPresent()) {
+            throw new ConflictException("Email is already registered: " + normalizedEmail);
         }
 
         AppUser user = AppUser.builder()
-                .email(request.getEmail())
+                .email(normalizedEmail)
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role("OWNER")
                 .build();
@@ -52,7 +62,11 @@ public class AuthService {
 
     @Transactional
     public AuthResponse login(LoginRequest request) {
-        AppUser user = appUserRepository.findByEmail(request.getEmail())
+        if (request.getEmail() == null) {
+            throw new BadRequestException("Email is required");
+        }
+        String normalizedEmail = request.getEmail().trim().toLowerCase();
+        AppUser user = appUserRepository.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
 
         if (user.getPasswordHash() == null || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
@@ -76,15 +90,16 @@ public class AuthService {
 
     @Transactional
     public AuthResponse googleOauth(GoogleOauthRequest request) {
-        String email = extractEmailFromGoogleToken(request.getIdToken());
-        Optional<AppUser> userOpt = appUserRepository.findByEmail(email);
+        String rawEmail = extractEmailFromGoogleToken(request.getIdToken());
+        String normalizedEmail = rawEmail.trim().toLowerCase();
+        Optional<AppUser> userOpt = appUserRepository.findByEmail(normalizedEmail);
 
         AppUser user;
         if (userOpt.isPresent()) {
             user = userOpt.get();
         } else {
             user = AppUser.builder()
-                    .email(email)
+                    .email(normalizedEmail)
                     .role("OWNER")
                     .build();
             appUserRepository.save(user);
@@ -355,5 +370,62 @@ public class AuthService {
         }
         public UserDto getUser() { return user; }
         public GymDto getGym() { return gym; }
+    }
+
+    public static class ForgotPasswordRequest {
+        private String email;
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+    }
+
+    public static class ResetPasswordRequest {
+        private String token;
+        private String newPassword;
+        public String getToken() { return token; }
+        public void setToken(String token) { this.token = token; }
+        public String getNewPassword() { return newPassword; }
+        public void setNewPassword(String newPassword) { this.newPassword = newPassword; }
+    }
+
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+        if (request.getEmail() == null) {
+            return;
+        }
+        String normalizedEmail = request.getEmail().trim().toLowerCase();
+        Optional<AppUser> userOpt = appUserRepository.findByEmail(normalizedEmail);
+        if (userOpt.isEmpty()) {
+            return; // Silently return for security
+        }
+        AppUser user = userOpt.get();
+        String tokenString = UUID.randomUUID().toString();
+
+        PasswordResetToken token = PasswordResetToken.builder()
+                .user(user)
+                .token(tokenString)
+                .expiryDate(Instant.now().plusSeconds(3600)) // 1 hour expiry
+                .build();
+        passwordResetTokenRepository.save(token);
+
+        String resetLink = "https://gympal-frontend-8sp65pi8w-gym-pal.vercel.app/reset-password/confirm?token=" + tokenString;
+        emailService.sendPasswordResetEmail(user.getEmail(), resetLink);
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        PasswordResetToken token = passwordResetTokenRepository.findByToken(request.getToken())
+                .orElseThrow(() -> new BadRequestException("Invalid or expired password reset token"));
+        
+        if (token.isExpired()) {
+            passwordResetTokenRepository.delete(token);
+            throw new BadRequestException("Invalid or expired password reset token");
+        }
+
+        AppUser user = token.getUser();
+        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        appUserRepository.save(user);
+
+        // Consume token
+        passwordResetTokenRepository.delete(token);
     }
 }

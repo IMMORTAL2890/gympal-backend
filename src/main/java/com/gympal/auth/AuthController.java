@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping({"/api/v1", ""})
 public class AuthController {
 
@@ -42,6 +43,18 @@ public class AuthController {
     public ResponseEntity<Void> logout() {
         // Stateless JWT logout - simply return 204 No Content
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/auth/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@RequestBody AuthService.ForgotPasswordRequest request) {
+        authService.forgotPassword(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/auth/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody AuthService.ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/auth/oauth/google")

@@ -11,6 +11,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.UUID;
 
 @RestController
+@CrossOrigin(origins = "*")
 @RequestMapping("/api/v1/dashboard")
 public class DashboardController {
 
