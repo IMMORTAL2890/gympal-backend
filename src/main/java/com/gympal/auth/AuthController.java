@@ -30,14 +30,7 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
-    @PostMapping("/auth/refresh")
-    public ResponseEntity<AuthService.AuthResponse> refresh(@RequestBody Map<String, String> body) {
-        String refreshToken = body.get("refreshToken");
-        if (refreshToken == null) {
-            return ResponseEntity.badRequest().build();
-        }
-        return ResponseEntity.ok(authService.refresh(refreshToken));
-    }
+
 
     @PostMapping("/auth/logout")
     public ResponseEntity<Void> logout() {

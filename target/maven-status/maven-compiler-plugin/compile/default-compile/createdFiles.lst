@@ -54,6 +54,7 @@ com\gympal\auth\JwtTokenProvider.class
 com\gympal\admin\PlatformAdmin.class
 com\gympal\attendance\BiometricDevice.class
 com\gympal\admin\AdminService$GymSummaryDto.class
+com\gympal\auth\PasswordResetToken.class
 com\gympal\common\enums\AccessStatus.class
 com\gympal\members\MemberController.class
 com\gympal\admin\AdminService.class
@@ -77,6 +78,7 @@ com\gympal\members\MemberService.class
 com\gympal\attendance\DeviceController.class
 com\gympal\common\enums\AccessAction.class
 com\gympal\members\MemberService$FeeSummaryDto.class
+com\gympal\common\ApiResponseAdvice.class
 com\gympal\access\AccessControlLog$AccessControlLogBuilder.class
 com\gympal\attendance\AttendanceSummary$AttendanceSummaryBuilder.class
 com\gympal\admin\AdminService$AdminUserDto.class
@@ -90,6 +92,7 @@ com\gympal\attendance\AttendanceLogRepository.class
 com\gympal\admin\AdminController.class
 com\gympal\common\WebConfig.class
 com\gympal\access\AccessService.class
+com\gympal\auth\PasswordResetToken$PasswordResetTokenBuilder.class
 com\gympal\common\exceptions\ConflictException.class
 com\gympal\common\enums\PunchType.class
 com\gympal\memberships\Membership$MembershipBuilder.class
@@ -106,7 +109,9 @@ com\gympal\admin\FeatureGate.class
 com\gympal\admin\AdminSeeder.class
 com\gympal\common\exceptions\UnauthorizedException.class
 com\gympal\auth\AuthService$UserDto.class
+com\gympal\common\ApiResponseAdvice$ApiResponse.class
 com\gympal\attendance\AttendanceController$PunchResponse.class
+com\gympal\common\EmailService.class
 com\gympal\access\AccessControlLog.class
 com\gympal\common\enums\DeviceSyncStatus.class
 com\gympal\payments\PaymentTransactionRepository.class
@@ -124,8 +129,11 @@ com\gympal\auth\AuthService$LoginRequest.class
 com\gympal\members\MemberService$MemberResponseDto.class
 com\gympal\auth\AppUser.class
 com\gympal\attendance\AttendanceLog.class
+com\gympal\auth\PasswordResetTokenRepository.class
 com\gympal\members\MemberService$MemberDetailDto.class
+com\gympal\auth\AuthService$ResetPasswordRequest.class
 com\gympal\admin\AdminService$TopGymDto.class
+com\gympal\auth\AuthService$ForgotPasswordRequest.class
 com\gympal\auth\AuthService$SignupRequest.class
 com\gympal\attendance\BiometricDeviceRepository.class
 com\gympal\auth\JwtAuthenticationFilter.class

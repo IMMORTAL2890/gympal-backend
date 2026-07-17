@@ -76,17 +76,7 @@ public class AuthService {
         return generateAuthResponse(user);
     }
 
-    public AuthResponse refresh(String refreshToken) {
-        if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new UnauthorizedException("Invalid refresh token");
-        }
 
-        UUID userId = jwtTokenProvider.getUserIdFromToken(refreshToken);
-        AppUser user = appUserRepository.findById(userId)
-                .orElseThrow(() -> new UnauthorizedException("User not found"));
-
-        return generateAuthResponse(user);
-    }
 
     @Transactional
     public AuthResponse googleOauth(GoogleOauthRequest request) {
@@ -222,9 +212,8 @@ public class AuthService {
 
     private AuthResponse generateAuthResponse(AppUser user) {
         String accessToken = jwtTokenProvider.generateAccessToken(user.getId(), user.getEmail(), user.getRole());
-        String refreshToken = jwtTokenProvider.generateRefreshToken(user.getId(), user.getEmail());
         UserDto userDto = new UserDto(user.getId(), user.getEmail(), user.getRole());
-        return new AuthResponse(accessToken, refreshToken, userDto);
+        return new AuthResponse(accessToken, userDto);
     }
 
     private String extractEmailFromGoogleToken(String idToken) {
@@ -234,18 +223,39 @@ public class AuthService {
         }
         
         try {
-            String[] parts = idToken.split("\\.");
-            if (parts.length >= 2) {
-                String payload = new String(java.util.Base64.getUrlDecoder().decode(parts[1]));
-                int emailIndex = payload.indexOf("\"email\":\"");
+            java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+            java.net.http.HttpRequest httpRequest = java.net.http.HttpRequest.newBuilder()
+                    .uri(java.net.URI.create("https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken))
+                    .GET()
+                    .build();
+
+            java.net.http.HttpResponse<String> httpResponse = client.send(httpRequest, java.net.http.HttpResponse.BodyHandlers.ofString());
+
+            if (httpResponse.statusCode() == 200) {
+                String responseBody = httpResponse.body();
+                int emailIndex = responseBody.indexOf("\"email\":\"");
                 if (emailIndex != -1) {
                     int start = emailIndex + 9;
-                    int end = payload.indexOf("\"", start);
-                    return payload.substring(start, end);
+                    int end = responseBody.indexOf("\"", start);
+                    String email = responseBody.substring(start, end);
+
+                    // Check if email_verified is true/1 (it can be string or boolean)
+                    boolean verified = responseBody.contains("\"email_verified\":\"true\"")
+                            || responseBody.contains("\"email_verified\":true")
+                            || responseBody.contains("\"email_verified\":\"1\"")
+                            || responseBody.contains("\"email_verified\":1");
+                    
+                    if (verified) {
+                        return email;
+                    } else {
+                        throw new UnauthorizedException("Google email address is not verified");
+                    }
                 }
+            } else {
+                throw new UnauthorizedException("Google token verification failed (HTTP " + httpResponse.statusCode() + ")");
             }
         } catch (Exception e) {
-            throw new UnauthorizedException("Invalid Google token format");
+            throw new UnauthorizedException("Failed to verify Google token: " + e.getMessage());
         }
         throw new UnauthorizedException("Could not extract email from Google token");
     }
@@ -347,16 +357,13 @@ public class AuthService {
 
     public static class AuthResponse {
         private String accessToken;
-        private String refreshToken;
         private UserDto user;
 
-        public AuthResponse(String accessToken, String refreshToken, UserDto user) {
+        public AuthResponse(String accessToken, UserDto user) {
             this.accessToken = accessToken;
-            this.refreshToken = refreshToken;
             this.user = user;
         }
         public String getAccessToken() { return accessToken; }
-        public String getRefreshToken() { return refreshToken; }
         public UserDto getUser() { return user; }
     }
 

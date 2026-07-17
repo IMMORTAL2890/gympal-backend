@@ -24,6 +24,18 @@ spring:
     enabled: true
     baseline-on-migrate: true
 
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
 jwt:
   # Secret key for HS256 algorithm (at least 256 bits, base64 encoded or simple text for dev)
   secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
