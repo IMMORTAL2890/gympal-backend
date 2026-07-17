@@ -76,6 +76,7 @@ com\gympal\gym\TrustedIp.class
 com\gympal\admin\AdminService$AdminDashboardStatsDto.class
 com\gympal\members\MemberService.class
 com\gympal\attendance\DeviceController.class
+com\gympal\common\ApiResponseDto.class
 com\gympal\common\enums\AccessAction.class
 com\gympal\members\MemberService$FeeSummaryDto.class
 com\gympal\common\ApiResponseAdvice.class
@@ -97,7 +98,6 @@ com\gympal\common\exceptions\ConflictException.class
 com\gympal\common\enums\PunchType.class
 com\gympal\memberships\Membership$MembershipBuilder.class
 com\gympal\admin\AdminService$AdminMemberDto.class
-com\gympal\common\exceptions\GlobalExceptionHandler$ErrorResponse.class
 com\gympal\FitTrackApplication.class
 com\gympal\common\enums\MembershipStatus.class
 com\gympal\admin\AdminService$GymDetailDto.class
@@ -109,7 +109,6 @@ com\gympal\admin\FeatureGate.class
 com\gympal\admin\AdminSeeder.class
 com\gympal\common\exceptions\UnauthorizedException.class
 com\gympal\auth\AuthService$UserDto.class
-com\gympal\common\ApiResponseAdvice$ApiResponse.class
 com\gympal\attendance\AttendanceController$PunchResponse.class
 com\gympal\common\EmailService.class
 com\gympal\access\AccessControlLog.class

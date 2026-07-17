@@ -10,27 +10,15 @@ import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Map;
 
 @ControllerAdvice
 public class ApiResponseAdvice implements ResponseBodyAdvice<Object> {
 
-    // Success response wrapper
-    public static class ApiResponse<T> {
-        private T data;
-        private String message;
-        private int status;
-
-        public ApiResponse(T data, String message, int status) {
-            this.data = data;
-            this.message = message;
-            this.status = status;
-        }
-
-        public T getData() { return data; }
-        public String getMessage() { return message; }
-        public int getStatus() { return status; }
-    }
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
@@ -53,11 +41,8 @@ public class ApiResponseAdvice implements ResponseBodyAdvice<Object> {
             return body;
         }
 
-        // If the body is already an ErrorResponse or ApiResponse, do not wrap it again
-        if (body instanceof com.gympal.common.exceptions.GlobalExceptionHandler.ErrorResponse) {
-            return body;
-        }
-        if (body instanceof ApiResponse) {
+        // If the body is already an ApiResponseDto, do not wrap it again
+        if (body instanceof ApiResponseDto) {
             return body;
         }
 
@@ -74,6 +59,35 @@ public class ApiResponseAdvice implements ResponseBodyAdvice<Object> {
             statusCode = ((ServletServerHttpResponse) response).getServletResponse().getStatus();
         }
 
-        return new ApiResponse<>(body, "Success", statusCode);
+        // Return empty body directly for HTTP 204 No Content
+        if (statusCode == HttpStatus.NO_CONTENT.value()) {
+            return body;
+        }
+
+        String message = "Request processed successfully.";
+        if (request instanceof org.springframework.http.server.ServletServerHttpRequest) {
+            String method = ((org.springframework.http.server.ServletServerHttpRequest) request).getServletRequest().getMethod();
+            if ("GET".equalsIgnoreCase(method)) {
+                message = "Data fetched successfully.";
+            } else if ("POST".equalsIgnoreCase(method)) {
+                message = "Data created successfully.";
+            } else if ("PUT".equalsIgnoreCase(method) || "PATCH".equalsIgnoreCase(method)) {
+                message = "Data updated successfully.";
+            } else if ("DELETE".equalsIgnoreCase(method)) {
+                message = "Data deleted successfully.";
+            }
+        }
+
+        // Handle raw String controller response wrapping
+        if (body instanceof String) {
+            try {
+                // Return wrapped object as JSON string since Spring's StringHttpMessageConverter is selected
+                return objectMapper.writeValueAsString(new ApiResponseDto<>(statusCode, message, body));
+            } catch (Exception e) {
+                return body;
+            }
+        }
+
+        return new ApiResponseDto<>(statusCode, message, body);
     }
 }
