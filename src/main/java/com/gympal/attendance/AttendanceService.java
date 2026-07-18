@@ -3,6 +3,7 @@ package com.gympal.attendance;
 import com.gympal.common.enums.AttendanceStatus;
 import com.gympal.common.enums.PunchSource;
 import com.gympal.common.enums.PunchType;
+import com.gympal.common.exceptions.NotFoundException;
 import com.gympal.members.Member;
 import com.gympal.members.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,12 +35,12 @@ public class AttendanceService {
     @Transactional
     public AttendanceLog registerPunch(Long memberId, String biometricUid, Long deviceId, Instant punchTime, PunchType punchType, PunchSource source, String note, UUID gymOwnerId) {
         Member member = memberRepository.findByIdAndGymOwnerId(memberId, gymOwnerId)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found: " + memberId));
+                .orElseThrow(() -> new NotFoundException("Member not found: " + memberId));
 
         BiometricDevice device = null;
         if (deviceId != null) {
             device = biometricDeviceRepository.findByIdAndGymOwnerId(deviceId, gymOwnerId)
-                    .orElseThrow(() -> new IllegalArgumentException("Device not found: " + deviceId));
+                        .orElseThrow(() -> new NotFoundException("Device not found: " + deviceId));
         }
 
         // Check for duplicate punch (within 60s of another punch by the same member)
@@ -74,7 +75,7 @@ public class AttendanceService {
     @Transactional
     public void rebuildAttendanceSummary(Long memberId, LocalDate date, UUID gymOwnerId) {
         Member member = memberRepository.findByIdAndGymOwnerId(memberId, gymOwnerId)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found: " + memberId));
+                .orElseThrow(() -> new NotFoundException("Member not found: " + memberId));
 
         // Get bounds in UTC for the start and end of the day in IST
         ZonedDateTime startOfDayIST = date.atStartOfDay(IST);

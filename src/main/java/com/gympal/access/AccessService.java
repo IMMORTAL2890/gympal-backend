@@ -1,5 +1,7 @@
 package com.gympal.access;
 
+import com.gympal.common.exceptions.NotFoundException;
+
 import com.gympal.common.enums.AccessAction;
 import com.gympal.common.enums.AccessStatus;
 import com.gympal.common.enums.MembershipStatus;
@@ -31,7 +33,7 @@ public class AccessService {
     @Transactional
     public void syncMemberAccessStatus(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found: " + memberId));
+                .orElseThrow(() -> new NotFoundException("Member not found: " + memberId));
 
         List<Membership> memberships = membershipRepository.findByMemberIdAndGymOwnerId(memberId, member.getGymOwnerId());
         LocalDate today = LocalDate.now();
@@ -84,7 +86,7 @@ public class AccessService {
     @Transactional
     public void manualBlockUnblock(Long memberId, AccessStatus targetStatus, String reason, String performedBy, UUID gymOwnerId) {
         Member member = memberRepository.findByIdAndGymOwnerId(memberId, gymOwnerId)
-                .orElseThrow(() -> new IllegalArgumentException("Member not found: " + memberId));
+                .orElseThrow(() -> new NotFoundException("Member not found: " + memberId));
 
         if (member.getAccessStatus() == targetStatus) {
             return; // no change

@@ -24,7 +24,7 @@ public class PaymentService {
     @Transactional
     public void recalcMembershipPaid(Long membershipId) {
         Membership membership = membershipRepository.findById(membershipId)
-                .orElseThrow(() -> new IllegalArgumentException("Membership not found: " + membershipId));
+                .orElseThrow(() -> new com.gympal.common.exceptions.NotFoundException("Membership not found: " + membershipId));
 
         BigDecimal amountPaid = paymentTransactionRepository.sumAmountByMembershipId(membershipId);
         if (amountPaid == null) {

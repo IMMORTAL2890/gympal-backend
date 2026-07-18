@@ -83,6 +83,12 @@ public class MembershipStatusService {
     // Run at 02:00 AM daily
     @Scheduled(cron = "0 0 2 * * ?")
     public void scheduledStatusRefresh() {
-        refreshMembershipStatuses();
+        try {
+            refreshMembershipStatuses();
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(MembershipStatusService.class)
+                    .error("[SCHEDULED] Membership status refresh failed at {}: {}",
+                            java.time.Instant.now(), e.getMessage(), e);
+        }
     }
 }

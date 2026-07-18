@@ -293,7 +293,8 @@ public class MemberService {
                 "owner",
                 gymOwnerId
         );
-        return memberRepository.findByIdAndGymOwnerId(id, gymOwnerId).orElseThrow();
+        return memberRepository.findByIdAndGymOwnerId(id, gymOwnerId)
+                .orElseThrow(() -> new com.gympal.common.exceptions.NotFoundException("Member not found: " + id));
     }
 
     // DTO Helper Classes

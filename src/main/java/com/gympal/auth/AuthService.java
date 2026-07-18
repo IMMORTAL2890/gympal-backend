@@ -255,9 +255,12 @@ public class AuthService {
         }
         
         try {
-            java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+            java.net.http.HttpClient client = java.net.http.HttpClient.newBuilder()
+                    .connectTimeout(java.time.Duration.ofSeconds(5))
+                    .build();
             java.net.http.HttpRequest httpRequest = java.net.http.HttpRequest.newBuilder()
                     .uri(java.net.URI.create("https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken))
+                    .timeout(java.time.Duration.ofSeconds(5))
                     .GET()
                     .build();
 
@@ -286,6 +289,10 @@ public class AuthService {
             } else {
                 throw new UnauthorizedException("Google token verification failed (HTTP " + httpResponse.statusCode() + ")");
             }
+        } catch (UnauthorizedException e) {
+            throw e;
+        } catch (java.net.http.HttpTimeoutException e) {
+            throw new UnauthorizedException("Google OAuth2 verification timed out. Please try again.");
         } catch (Exception e) {
             throw new UnauthorizedException("Failed to verify Google token: " + e.getMessage());
         }

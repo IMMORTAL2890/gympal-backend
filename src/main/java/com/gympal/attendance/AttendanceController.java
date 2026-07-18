@@ -114,27 +114,39 @@ public class AttendanceController {
                 Optional<Member> memberOpt = memberRepository.findByGymOwnerIdAndBiometricUid(gymOwnerId, p.getBiometricUid());
                 if (memberOpt.isPresent()) {
                     Member member = memberOpt.get();
-                    Instant punchTime = Instant.parse(p.getPunchTime());
-                    
-                    PunchType ptType = PunchType.unknown;
-                    if ("in".equalsIgnoreCase(p.getPunchType())) ptType = PunchType.in;
-                    else if ("out".equalsIgnoreCase(p.getPunchType())) ptType = PunchType.out;
+                    try {
+                        Instant punchTime = Instant.parse(p.getPunchTime());
+                        
+                        PunchType ptType = PunchType.unknown;
+                        if ("in".equalsIgnoreCase(p.getPunchType())) ptType = PunchType.in;
+                        else if ("out".equalsIgnoreCase(p.getPunchType())) ptType = PunchType.out;
 
-                    AttendanceLog log = attendanceService.registerPunch(
-                            member.getId(),
-                            p.getBiometricUid(),
-                            device.getId(),
-                            punchTime,
-                            ptType,
-                            PunchSource.biometric,
-                            "Bridge sync",
-                            gymOwnerId
-                    );
+                        AttendanceLog log = attendanceService.registerPunch(
+                                member.getId(),
+                                p.getBiometricUid(),
+                                device.getId(),
+                                punchTime,
+                                ptType,
+                                PunchSource.biometric,
+                                "Bridge sync",
+                                gymOwnerId
+                        );
 
-                    if (log.isDuplicate()) {
-                        deduped++;
-                    } else {
-                        accepted++;
+                        if (log.isDuplicate()) {
+                            deduped++;
+                        } else {
+                            accepted++;
+                        }
+                    } catch (java.time.format.DateTimeParseException e) {
+                        // Skip malformed punch timestamp from device — log and continue
+                        org.slf4j.LoggerFactory.getLogger(AttendanceController.class)
+                                .warn("[PUNCH] Skipping malformed punchTime '{}' from device {}: {}",
+                                        p.getPunchTime(), p.getDeviceSerial(), e.getMessage());
+                    } catch (Exception e) {
+                        // Log and continue processing remaining punches
+                        org.slf4j.LoggerFactory.getLogger(AttendanceController.class)
+                                .warn("[PUNCH] Failed to register punch for member {} on device {}: {}",
+                                        p.getBiometricUid(), p.getDeviceSerial(), e.getMessage());
                     }
                 }
             }
