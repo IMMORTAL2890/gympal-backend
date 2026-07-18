@@ -42,9 +42,19 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(SignupRequest request) {
-        if (request.getEmail() == null) {
-            throw new BadRequestException("Email is required");
+        if (request.getEmail() == null || request.getPassword() == null) {
+            throw new BadRequestException("Email and password are required");
         }
+        if (request.getGymName() == null || request.getGymName().trim().isEmpty()) {
+            throw new BadRequestException("Gym name is required");
+        }
+        if (request.getOwnerName() == null || request.getOwnerName().trim().isEmpty()) {
+            throw new BadRequestException("Owner name is required");
+        }
+        if (request.getMobile() == null || !request.getMobile().matches("^[0-9+\\-\\s]{7,15}$")) {
+            throw new BadRequestException("Mobile number must be between 7 and 15 digits");
+        }
+
         String normalizedEmail = request.getEmail().trim().toLowerCase();
         if (appUserRepository.findByEmail(normalizedEmail).isPresent()) {
             throw new ConflictException("Email is already registered: " + normalizedEmail);
@@ -56,6 +66,28 @@ public class AuthService {
                 .role("OWNER")
                 .build();
         appUserRepository.save(user);
+
+        GymOwner owner = GymOwner.builder()
+                .authUserId(user.getId())
+                .gymName(request.getGymName())
+                .ownerName(request.getOwnerName())
+                .mobileNumber(request.getMobile())
+                .autoReminderEnabled(true)
+                .reminderDaysBefore(3)
+                .build();
+        gymOwnerRepository.save(owner);
+
+        try {
+            TrustedIp ip = TrustedIp.builder()
+                    .owner(owner)
+                    .ipAddress("127.0.0.1")
+                    .label("Initial sign up device")
+                    .lastSeenAt(Instant.now())
+                    .build();
+            trustedIpRepository.save(ip);
+        } catch (Exception e) {
+            // Ignore failure to log initial IP
+        }
 
         return generateAuthResponse(user);
     }
@@ -264,10 +296,20 @@ public class AuthService {
     public static class SignupRequest {
         private String email;
         private String password;
+        private String gymName;
+        private String ownerName;
+        private String mobile;
+
         public String getEmail() { return email; }
         public void setEmail(String email) { this.email = email; }
         public String getPassword() { return password; }
         public void setPassword(String password) { this.password = password; }
+        public String getGymName() { return gymName; }
+        public void setGymName(String gymName) { this.gymName = gymName; }
+        public String getOwnerName() { return ownerName; }
+        public void setOwnerName(String ownerName) { this.ownerName = ownerName; }
+        public String getMobile() { return mobile; }
+        public void setMobile(String mobile) { this.mobile = mobile; }
     }
 
     public static class LoginRequest {
