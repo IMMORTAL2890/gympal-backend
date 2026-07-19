@@ -30,7 +30,7 @@ public class AccessControlLog {
     private BiometricDevice device;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "access_action", nullable = false)
+    @Column(name = "action", nullable = false)
     private AccessAction action;
 
     private String reason;

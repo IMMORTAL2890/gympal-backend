@@ -42,7 +42,7 @@ public class AttendanceSummary {
     private int totalPunches = 0;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "attendance_status")
+    @Column(name = "status")
     @Builder.Default
     private AttendanceStatus status = AttendanceStatus.present;
 

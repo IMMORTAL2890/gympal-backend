@@ -1,4 +1,5 @@
 com\gympal\auth\TenantBlockingTest.class
 com\gympal\admin\AdminFeatureGateAndRevenueTest.class
 com\gympal\FitTrackApplicationTests.class
+com\gympal\members\MemberEnumSaveTest.class
 com\gympal\auth\SignupRollbackTest.class

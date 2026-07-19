@@ -52,7 +52,7 @@ public class Member {
     private String biometricUid;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "access_status", columnDefinition = "access_status")
+    @Column(name = "access_status")
     @Builder.Default
     private AccessStatus accessStatus = AccessStatus.blocked;
 

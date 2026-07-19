@@ -64,14 +64,14 @@ public class Membership {
     private BigDecimal dueAmount;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_mode", columnDefinition = "payment_mode")
+    @Column(name = "payment_mode")
     private PaymentMode paymentMode;
 
     @Column(name = "payment_status", nullable = false)
     private String paymentStatus;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "membership_status", nullable = false)
+    @Column(name = "status", nullable = false)
     private MembershipStatus status;
 
     private String notes;

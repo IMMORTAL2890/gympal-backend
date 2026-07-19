@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.Instant;
 import java.util.UUID;
-
 @Entity
 @Table(name = "biometric_devices")
 @Getter
@@ -55,7 +54,7 @@ public class BiometricDevice {
     private Instant lastSyncTime;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "last_sync_status", columnDefinition = "device_sync_status")
+    @Column(name = "last_sync_status")
     @Builder.Default
     private DeviceSyncStatus lastSyncStatus = DeviceSyncStatus.never;
 

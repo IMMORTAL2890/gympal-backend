@@ -34,7 +34,7 @@ public class NotificationLog {
     private String message;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "notif_status", nullable = false)
+    @Column(name = "status", nullable = false)
     private NotifStatus status;
 
     @Column(name = "sent_at")

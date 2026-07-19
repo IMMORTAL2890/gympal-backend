@@ -36,7 +36,7 @@ public class AttendanceLog {
     private Instant punchTime;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "punch_type", columnDefinition = "punch_type")
+    @Column(name = "punch_type")
     @Builder.Default
     private PunchType punchType = PunchType.unknown;
 
@@ -45,7 +45,7 @@ public class AttendanceLog {
     private int verifyMode = 0;
 
     @Enumerated(EnumType.STRING)
-    @Column(columnDefinition = "punch_source")
+    @Column(name = "source")
     @Builder.Default
     private PunchSource source = PunchSource.biometric;
 
