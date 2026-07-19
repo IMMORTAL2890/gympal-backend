@@ -8,4 +8,5 @@ import java.util.UUID;
 @Repository
 public interface GymOwnerRepository extends JpaRepository<GymOwner, UUID> {
     Optional<GymOwner> findByAuthUserId(UUID authUserId);
+    Optional<GymOwner> findByMobileNumber(String mobileNumber);
 }

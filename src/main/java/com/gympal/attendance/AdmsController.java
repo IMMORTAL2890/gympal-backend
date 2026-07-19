@@ -21,6 +21,8 @@ import java.util.UUID;
 @RequestMapping("/iclock")
 public class AdmsController {
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AdmsController.class);
+
     @Autowired
     private AttendanceService attendanceService;
 
@@ -34,15 +36,15 @@ public class AdmsController {
     private static final DateTimeFormatter ADMS_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     /**
-     * 1. GET /iclock/cdata
+     * 1. GET /iclock/cdata or /iclock/cdata.aspx
      * Handshake and option sync between device and cloud.
      */
-    @GetMapping(value = "/cdata", produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value = {"/cdata", "/cdata.aspx"}, produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> handleHandshake(
             @RequestParam(value = "SN") String serialNumber,
             @RequestParam(value = "options", required = false) String options) {
         
-        System.out.println("[ADMS Handshake] Device SN connected: " + serialNumber);
+        logger.info("[ADMS Handshake] Device SN connected: {}", serialNumber);
         
         // Verify device is registered in FitTrack
         Optional<BiometricDevice> deviceOpt = biometricDeviceRepository.findAll().stream()
@@ -50,7 +52,7 @@ public class AdmsController {
                 .findFirst();
                 
         if (deviceOpt.isEmpty()) {
-            System.out.println("[ADMS Handshake] Unregistered device serial attempted: " + serialNumber);
+            logger.warn("[ADMS Handshake] Unregistered device serial attempted: {}", serialNumber);
             return ResponseEntity.status(401).body("Unregistered device: " + serialNumber);
         }
 
@@ -66,16 +68,16 @@ public class AdmsController {
     }
 
     /**
-     * 2. POST /iclock/cdata
+     * 2. POST /iclock/cdata or /iclock/cdata.aspx
      * Receives attendance log chunks (ATTLOG) directly from the device.
      */
-    @PostMapping(value = "/cdata", produces = MediaType.TEXT_PLAIN_VALUE)
+    @PostMapping(value = {"/cdata", "/cdata.aspx"}, produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> receiveDeviceLogs(
             @RequestParam(value = "SN") String serialNumber,
             @RequestParam(value = "table") String table,
             @RequestBody String body) {
 
-        System.out.println("[ADMS POST Data] Device SN: " + serialNumber + ", table: " + table);
+        logger.info("[ADMS POST Data] Device SN: {}, table: {}", serialNumber, table);
         
         Optional<BiometricDevice> deviceOpt = biometricDeviceRepository.findAll().stream()
                 .filter(d -> serialNumber.equals(d.getDeviceSerial()))
@@ -124,11 +126,11 @@ public class AdmsController {
                             accepted++;
                         }
                     } catch (Exception e) {
-                        System.err.println("[ADMS Parsing Error] Could not process line '" + line + "': " + e.getMessage());
+                        logger.error("[ADMS Parsing Error] Could not process line '{}'", line, e);
                     }
                 }
             }
-            System.out.println("[ADMS Sync Completed] Processed " + accepted + " punches successfully.");
+            logger.info("[ADMS Sync Completed] Processed {} punches successfully.", accepted);
             
             // Update device sync statistics
             device.setLastSyncStatus(com.gympal.common.enums.DeviceSyncStatus.success);
@@ -143,20 +145,20 @@ public class AdmsController {
     }
 
     /**
-     * 3. GET /iclock/getrequest
+     * 3. GET /iclock/getrequest or /iclock/getrequest.aspx
      * Machine polls this to check for pending server commands (e.g. remote reboot).
      */
-    @GetMapping(value = "/getrequest", produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value = {"/getrequest", "/getrequest.aspx"}, produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> handleCommandPolling(@RequestParam(value = "SN") String serialNumber) {
         // Return empty response (no commands pending)
         return ResponseEntity.ok("OK");
     }
 
     /**
-     * 4. POST /iclock/devicecmd
+     * 4. POST /iclock/devicecmd or /iclock/devicecmd.aspx
      * Machine posts execution confirmation results of server commands here.
      */
-    @PostMapping(value = "/devicecmd", produces = MediaType.TEXT_PLAIN_VALUE)
+    @PostMapping(value = {"/devicecmd", "/devicecmd.aspx"}, produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<String> receiveCommandConfirmations(
             @RequestParam(value = "SN") String serialNumber,
             @RequestBody String body) {

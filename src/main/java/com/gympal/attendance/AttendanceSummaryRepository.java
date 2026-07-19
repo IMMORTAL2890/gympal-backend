@@ -12,4 +12,5 @@ public interface AttendanceSummaryRepository extends JpaRepository<AttendanceSum
     Optional<AttendanceSummary> findByIdAndGymOwnerId(Long id, UUID gymOwnerId);
     Optional<AttendanceSummary> findByMemberIdAndAttendanceDate(Long memberId, LocalDate attendanceDate);
     List<AttendanceSummary> findByGymOwnerIdAndAttendanceDate(UUID gymOwnerId, LocalDate attendanceDate);
+    List<AttendanceSummary> findByMemberIdAndGymOwnerIdAndAttendanceDateBetween(Long memberId, UUID gymOwnerId, LocalDate startDate, LocalDate endDate);
 }

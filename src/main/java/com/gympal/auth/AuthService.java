@@ -3,10 +3,13 @@ package com.gympal.auth;
 import com.gympal.common.exceptions.BadRequestException;
 import com.gympal.common.exceptions.ConflictException;
 import com.gympal.common.exceptions.UnauthorizedException;
+import com.gympal.common.exceptions.DuplicateEmailException;
+import com.gympal.common.exceptions.DuplicatePhoneException;
 import com.gympal.gym.GymOwner;
 import com.gympal.gym.GymOwnerRepository;
 import com.gympal.gym.TrustedIp;
 import com.gympal.gym.TrustedIpRepository;
+import com.gympal.gym.TrustedIpService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,8 @@ import java.util.UUID;
 @Service
 public class AuthService {
 
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(AuthService.class);
+
     @Autowired
     private AppUserRepository appUserRepository;
 
@@ -27,6 +32,9 @@ public class AuthService {
 
     @Autowired
     private TrustedIpRepository trustedIpRepository;
+
+    @Autowired
+    private TrustedIpService trustedIpService;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -57,7 +65,11 @@ public class AuthService {
 
         String normalizedEmail = request.getEmail().trim().toLowerCase();
         if (appUserRepository.findByEmail(normalizedEmail).isPresent()) {
-            throw new ConflictException("Email is already registered: " + normalizedEmail);
+            throw new DuplicateEmailException("Email is already registered: " + normalizedEmail);
+        }
+
+        if (gymOwnerRepository.findByMobileNumber(request.getMobile()).isPresent()) {
+            throw new DuplicatePhoneException("Mobile number is already registered: " + request.getMobile());
         }
 
         AppUser user = AppUser.builder()
@@ -65,10 +77,10 @@ public class AuthService {
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role("OWNER")
                 .build();
-        appUserRepository.save(user);
+        AppUser savedUser = appUserRepository.save(user);
 
         GymOwner owner = GymOwner.builder()
-                .authUserId(user.getId())
+                .authUserId(savedUser.getId())
                 .gymName(request.getGymName())
                 .ownerName(request.getOwnerName())
                 .mobileNumber(request.getMobile())
@@ -78,18 +90,12 @@ public class AuthService {
         gymOwnerRepository.save(owner);
 
         try {
-            TrustedIp ip = TrustedIp.builder()
-                    .owner(owner)
-                    .ipAddress("127.0.0.1")
-                    .label("Initial sign up device")
-                    .lastSeenAt(Instant.now())
-                    .build();
-            trustedIpRepository.save(ip);
+            trustedIpService.saveTrustedIp(owner, "127.0.0.1", "Initial sign up device");
         } catch (Exception e) {
-            // Ignore failure to log initial IP
+            logger.warn("Warning: Failed to save initial trusted IP address for owner {}: {}", owner.getId(), e.getMessage(), e);
         }
 
-        return generateAuthResponse(user);
+        return generateAuthResponse(savedUser);
     }
 
     @Transactional
@@ -165,23 +171,10 @@ public class AuthService {
             if (clientIp != null && !clientIp.isEmpty()) {
                 // Check if IP format is ipv6 loopback or similar
                 String formattedIp = "0:0:0:0:0:0:0:1".equals(clientIp) || "127.0.0.1".equals(clientIp) || "::1".equals(clientIp) ? "127.0.0.1" : clientIp;
-                
-                // Fetch in memory to avoid PostgreSQL INET comparison cast issues
-                boolean ipExists = trustedIpRepository.findByOwnerId(owner.getId()).stream()
-                        .anyMatch(ip -> ip.getIpAddress().equalsIgnoreCase(formattedIp));
-                
-                if (!ipExists) {
-                    TrustedIp ip = TrustedIp.builder()
-                            .owner(owner)
-                            .ipAddress(formattedIp)
-                            .label("This device")
-                            .lastSeenAt(Instant.now())
-                            .build();
-                    trustedIpRepository.save(ip);
-                }
+                trustedIpService.saveTrustedIp(owner, formattedIp, "This device");
             }
         } catch (Exception e) {
-            System.err.println("Warning: Failed to save trusted IP address: " + e.getMessage());
+            logger.warn("Warning: Failed to save trusted IP address for owner {}: {}", owner.getId(), e.getMessage(), e);
         }
 
         return owner;

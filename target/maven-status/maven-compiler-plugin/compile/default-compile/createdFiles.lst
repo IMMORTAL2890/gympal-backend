@@ -68,6 +68,7 @@ com\gympal\alerts\NotificationLog$NotificationLogBuilder.class
 com\gympal\admin\PlatformAdminRepository.class
 com\gympal\attendance\AttendanceController.class
 com\gympal\attendance\AttendanceController$AttendanceRow.class
+com\gympal\gym\TrustedIpService.class
 com\gympal\members\Member$MemberBuilder.class
 com\gympal\gym\GymOwnerRepository.class
 com\gympal\access\AccessControlLogRepository.class
@@ -77,6 +78,7 @@ com\gympal\admin\AdminService$AdminDashboardStatsDto.class
 com\gympal\members\MemberService.class
 com\gympal\attendance\DeviceController.class
 com\gympal\common\ApiResponseDto.class
+com\gympal\attendance\AttendanceController$ManualPunchRequest.class
 com\gympal\common\enums\AccessAction.class
 com\gympal\members\MemberService$FeeSummaryDto.class
 com\gympal\common\ApiResponseAdvice.class
@@ -88,6 +90,7 @@ com\gympal\payments\PaymentService.class
 com\gympal\common\SecurityConfig.class
 com\gympal\plans\Plan.class
 com\gympal\plans\PlanController.class
+com\gympal\common\exceptions\DuplicateEmailException.class
 com\gympal\auth\AuthService$GymUpdateRequest.class
 com\gympal\attendance\AttendanceLogRepository.class
 com\gympal\admin\AdminController.class
@@ -107,6 +110,7 @@ com\gympal\members\MemberService$AccessUpdateDto.class
 com\gympal\gym\TrustedIp$TrustedIpBuilder.class
 com\gympal\admin\FeatureGate.class
 com\gympal\admin\AdminSeeder.class
+com\gympal\attendance\AttendanceController$MonthlyAttendanceDto.class
 com\gympal\common\exceptions\UnauthorizedException.class
 com\gympal\auth\AuthService$UserDto.class
 com\gympal\attendance\AttendanceController$PunchResponse.class
@@ -119,6 +123,7 @@ com\gympal\auth\AuthService$MeResponse.class
 com\gympal\plans\PlanRepository.class
 com\gympal\common\exceptions\NotFoundException.class
 com\gympal\gym\DashboardService$RecentMembershipDto.class
+com\gympal\common\exceptions\DuplicatePhoneException.class
 com\gympal\payments\PaymentService$AddPaymentDto.class
 com\gympal\gym\DashboardService$ChartDataPoint.class
 com\gympal\gym\DashboardService$DashboardStats.class

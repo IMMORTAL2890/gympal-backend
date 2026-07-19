@@ -72,6 +72,22 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, status);
     }
 
+    /** Handles Duplicate Email Exception */
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<ApiResponseDto<Object>> handleDuplicateEmail(DuplicateEmailException ex, HttpServletRequest request) {
+        logAndScrubError(request, "CONFLICT", ex.getMessage(), ex);
+        ApiResponseDto<Object> response = ApiResponseDto.error(HttpStatus.CONFLICT.value(), sanitizeMessage(ex.getMessage()));
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
+    /** Handles Duplicate Phone Exception */
+    @ExceptionHandler(DuplicatePhoneException.class)
+    public ResponseEntity<ApiResponseDto<Object>> handleDuplicatePhone(DuplicatePhoneException ex, HttpServletRequest request) {
+        logAndScrubError(request, "CONFLICT", ex.getMessage(), ex);
+        ApiResponseDto<Object> response = ApiResponseDto.error(HttpStatus.CONFLICT.value(), sanitizeMessage(ex.getMessage()));
+        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
+    }
+
     /** Handles SMTP/Email sending exceptions */
     @ExceptionHandler({org.springframework.mail.MailException.class, jakarta.mail.MessagingException.class})
     public ResponseEntity<ApiResponseDto<Object>> handleMailException(Exception ex, HttpServletRequest request) {
